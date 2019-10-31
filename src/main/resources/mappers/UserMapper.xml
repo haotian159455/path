@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.shop.mapper.user.IUserMapper">
+	
+	<sql id="qwe">
+        <where>
+        <if test="realName!=null and !realName.equals('')">
+            and realName like concat("%",#{realName},"%")
+        </if>
+        <if test="userName!=null and !userName.equals('')">
+            and userName like concat("%",#{userName},"%")
+        </if>
+        <if test="minAge!=null and minAge>0" >
+            and age >= #{minAge}
+        </if>
+        <if test="maxAge!=null and maxAge>minAge">
+            and age &lt;= #{maxAge}
+        </if>
+        <if test="minSalary!=null and minSalary>0">
+            and salary >= #{minSalary}
+        </if>
+        <if test="maxSalary!=null and maxSalary>=minSalary">
+            and salary &lt;= #{maxSalary}
+        </if>
+        <if test="minComeTime!=null">
+            and comeTime >= #{minComeTime}
+        </if>
+        <if test="maxComeTime!=null and maxComeTime>=minComeTime">
+            and comeTime &lt;= #{maxComeTime}
+        </if>
+            <if test="roleId>0">
+                and id in (
+                select ur.userid from user_role ur where find_in_set(roleid,#{roleIds}) group by ur.userid having count(*)=#{roleId}
+                )
+            </if>
+            <if test="a1 != null and a1>0">
+                and a1=#{a1}
+            </if>
+            <if test="a2 != null and a2>0">
+                and a2=#{a2}
+            </if>
+            <if test="a3 != null and a3>0">
+                and a3=#{a3}
+            </if>
+
+        </where>
+    </sql>
+	<insert id="addUser" parameterType="com.fh.shop.po.user.User">
+<selectKey keyProperty="id" resultType="long" order="AFTER">
+    select last_insert_id();
+</selectKey>
+		insert into t_user (username,realname,password,sex,age,phone,email,salary,comeTime,imgPath,loginCount,dqTime,scTime,a1,a2,a3)
+        values
+        (#{userName},#{realName},#{password},#{sex},#{age},#{phone},#{email},#{salary},#{comeTime},#{imgPath},#{loginCount},#{dqTime},#{scTime},#{a1},#{a2},#{a3})
+	</insert>
+
+    <insert id="addUserRole" parameterType="com.fh.shop.po.user.UserRole">
+		insert into user_role (userid,roleid) values (#{userId},#{roleId})
+	</insert>
+
+	<select id="selectUser" resultType="com.fh.shop.po.user.User" parameterType="com.fh.shop.param.user.UserParam">
+
+        select t.id,t.userName,t.realName,t.sex,t.age,t.phone,t.email,t.salary,t.comeTime,t.imgPath,
+        CONCAT(a1.areaName,"→",a2.areaName,"→",a3.areaName) "aname" from t_user t
+        LEFT JOIN t_area1 a1 on t.a1 = a1.id
+        LEFT JOIN t_area1 a2 on t.a2 = a2.id
+        LEFT JOIN t_area1 a3 on t.a3 = a3.id
+        <include refid="qwe"></include>
+        order by id desc
+        limit #{start},#{length}
+
+
+	</select>
+
+<select id="selectCount" resultType="Long" parameterType="com.fh.shop.param.user.UserParam">
+	select count(*) from t_user
+    <include refid="qwe"></include>
+</select>
+	<delete id="deleteUser" parameterType="Integer">
+		delete from t_user where id=#{id}
+	</delete>
+    <delete id="deleteUserRole" parameterType="Integer">
+		delete from user_role where userId=#{value}
+	</delete>
+    <delete id="deleteBatch">
+		delete from t_user where id in
+		<foreach collection="list" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+	</delete>
+	<select id="selectUserById" parameterType="Integer" resultType="com.fh.shop.po.user.User">
+        select t.id,t.userName,t.realName,t.sex,t.age,t.phone,t.email,t.salary,t.comeTime,t.imgPath,
+        CONCAT(a1.areaName,"→",a2.areaName,"→",a3.areaName) "aname" from t_user  t
+        LEFT JOIN t_area1 a1 on t.a1 = a1.id
+        LEFT JOIN t_area1 a2 on t.a2 = a2.id
+        LEFT JOIN t_area1 a3 on t.a3 = a3.id
+        where t.id=#{t.id}
+
+
+	</select>
+    <select id="selectUserRole" parameterType="long" resultType="string">
+		select r.roleName from user_role ur left join t_role r on ur.roleid=r.id where ur.userid=#{v}
+	</select>
+    <select id="selectUserRoleId" parameterType="long" resultType="long">
+		select roleid from user_role  where userid=#{v}
+	</select>
+	<update id="updateUser" parameterType="com.fh.shop.po.user.User">
+		update t_user set userName=#{userName},realName=#{realName},password=#{password},sex=#{sex},age=#{age},
+		phone=#{phone},email=#{email},salary=#{salary},comeTime=#{comeTime},imgPath=#{imgPath}
+        <if test=" a1 !=null and a1>0">
+            ,a1 = #{a1}
+        </if>
+        <if test=" a2 !=null and a2>0">
+            ,a2 = #{a2}
+        </if>
+        <if test=" a3 !=null and a3>0">
+            ,a3 = #{a3}
+        </if>
+		 where id=#{id}
+	</update>
+
+    <select id="selectUserByName" parameterType="string" resultType="com.fh.shop.po.user.User">
+		select id,userName,realName,password,sex,age,phone,email,salary,comeTime,imgPath,loginCount,dqTime,scTime,errorCount,isLock,lockTime from t_user  where userName=#{v}
+	</select>
+
+
+    <update id="updateLoginUser" parameterType="com.fh.shop.po.user.User">
+		update t_user set dqTime=#{dqTime},scTime=#{scTime},loginCount=#{loginCount} where id=#{id}
+	</update>
+
+    <update id="updateErrorCount" parameterType="com.fh.shop.po.user.User">
+		update t_user set errorCount=#{errorCount},isLock=#{isLock},lockTime=#{lockTime} where id=#{id}
+	</update>
+
+    <select id="selectList" resultType="com.fh.shop.po.user.User" parameterType="com.fh.shop.param.user.UserParam">
+        select t.* from
+        (select id,userName,realName,sex,age,phone,email,salary,comeTime,imgPath from t_user)t
+        <include refid="qwe"></include>
+    </select>
+
+
+    <select id="selectMenu" resultType="com.fh.shop.param.menu.MenuParam" parameterType="long">
+       select ta.id,ta.pId,ta.areaName,ta.menuUrl from user_role ur left join role_menu rm on ur.roleId=rm.roleId
+       left join t_area ta on rm.menuId=ta.id
+       where ur.userid=#{value} and ta.pId=1 and ta.menuType=1 group by ta.id
+    </select>
+
+
+    <select id="selectMenu2" resultType="com.fh.shop.param.menu.MenuParam" parameterType="long">
+       select ta.id,ta.pId,ta.areaName,ta.menuUrl from user_role ur left join role_menu rm on ur.roleId=rm.roleId
+       left join t_area ta on rm.menuId=ta.id
+       where ur.userid=#{id} and  ta.pid=#{pid} and ta.menuType=1 group by ta.id
+    </select>
+
+
+    <select id="selectMenuIn" resultType="com.fh.shop.po.menu.Menu" parameterType="long">
+    select id,pId,areaName,menuUrl from t_area where id>1 and id in
+      ( select ta.id from user_role ur left join role_menu rm on ur.roleId=rm.roleId
+       left join t_area ta on rm.menuId=ta.id
+       where ur.userid=#{id} and  ta.menuType=1 group by ta.id)
+    </select>
+
+
+
+    <select id="confirmUserName" resultType="com.fh.shop.po.user.User" parameterType="string">
+      select id,userName,realName from t_user where userName=#{v}
+    </select>
+
+</mapper>

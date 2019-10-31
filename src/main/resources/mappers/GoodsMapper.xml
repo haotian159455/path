@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.shop.mapper.goods.IGoodsMapper">
+
+
+	<sql id="tiaojian">
+		<where>
+			<if test="goodsName != null and goodsName != '' ">
+				and goodsName like concat("%",#{goodsName},"%")
+			</if>
+			<if test="minGoodsPrice !=null and minGoodsPrice>0">
+				and price >=#{minGoodsPrice}
+			</if>
+			<if test="maxGoodsPrice !=null and maxGoodsPrice>=minGoodsPrice">
+				and price &lt;= #{maxGoodsPrice}
+			</if>
+			<if test="minGoodsDate != null">
+				and createDate >= #{minGoodsDate}
+			</if>
+			<if test="maxGoodsDate != null and maxGoodsDate >= minGoodsDate">
+				and createDate &lt;= #{maxGoodsDate}
+			</if>
+		</where>
+	</sql>
+
+	
+	<select id="queryCount" resultType="Long" parameterType="com.fh.shop.param.goods.GoodsParam">
+		select count(*) from t_goods <include refid="tiaojian"></include>
+	</select>
+	<select id="queryList" resultType="com.fh.shop.po.goods.Goods" parameterType="com.fh.shop.param.goods.GoodsParam">
+		select id,goodsName,price,createDate from t_goods
+		<include refid="tiaojian"></include>
+		limit #{start},#{length}
+	</select>
+
+</mapper>
