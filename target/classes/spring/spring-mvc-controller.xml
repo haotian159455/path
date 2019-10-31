@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="GBK"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/tx   
+        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd  
+        http://www.springframework.org/schema/mvc   
+    	http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+        http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!--扫描控制层-->
+    <context:component-scan base-package="com.fh.shop.controller"/>
+    <context:component-scan base-package="com.fh.shop.exception"/>
+    <!-- 注解驱动 -->
+    <mvc:annotation-driven/>
+    <!--内部视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:annotation-driven/>
+    <!--上传文件解析-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!--文件的最大上传大小 单位:字节-->
+        <property name="maxUploadSize" value="20000000"/>
+    </bean>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- /** 表示对所有的方法都进行拦截 -->
+            <mvc:mapping path="/**" />
+            <!-- 指定不需要拦截的方法 -->
+            <mvc:exclude-mapping path="/user/login.do" />
+            <!-- 指定拦截器 -->
+            <bean class="com.fh.shop.interceptor.Interceptor"></bean>
+        </mvc:interceptor>
+        <!--权限拦截-->
+        <mvc:interceptor>
+            <!-- /** 表示对所有的方法都进行拦截 -->
+            <mvc:mapping path="/**" />
+            <!-- 指定不需要拦截的方法 -->
+            <mvc:exclude-mapping path="/user/login.do" />
+            <!-- 指定拦截器 -->
+            <bean class="com.fh.shop.interceptor.MenuInterceptor2"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <bean id="infoAspect" class="com.fh.shop.aspect.InfoAspect"></bean>
+    <bean id="logAspect" class="com.fh.shop.aspect.LogAspect"></bean>
+
+    <aop:config>
+        <aop:aspect ref="infoAspect">
+            <aop:pointcut id="pp" expression="execution(* com.fh.shop.controller..*.del*(..))|| execution(* com.fh.shop.controller..*.add*(..))||execution(* com.fh.shop.controller..*.update*(..))||execution(* com.fh.shop.controller..*.reset*(..))"></aop:pointcut>
+            <aop:around method="doInfo" pointcut-ref="pp"></aop:around>
+        </aop:aspect>
+        <aop:aspect ref="logAspect">
+            <aop:pointcut id="LogAspectCut" expression="execution(* com.fh.shop.controller..*.del*(..))|| execution(* com.fh.shop.controller..*.add*(..))||execution(* com.fh.shop.controller..*.update*(..))||execution(* com.fh.shop.controller..*.reset*(..))"></aop:pointcut>
+            <aop:around method="doLog" pointcut-ref="LogAspectCut"></aop:around>
+        </aop:aspect>
+    </aop:config>
+
+
+</beans>

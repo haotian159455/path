@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+
+
+
+<!--对应mapper接口的全路径-->
+<mapper namespace="com.fh.shop.mapper.UserVip.UserVipMapper">
+
+    <sql id="tiaojian">
+        <where>
+            <if test="name!= null and name!=''">
+                name like concat ('%',#{name},'%')
+            </if>
+            <if test="realName != null and realName!=''">
+                and realName like concat('%',#{realName},'%')
+            </if>
+            <if test="minBirthday != null">
+                and birthday > #{minBirthday}
+            </if>
+            <if test="maxBirthday != null and maxBirthday>minBirthday">
+                and birthday  &lt;#{maxBirthday}
+            </if>
+            <if test="a1 != null and a1 >0">
+                and a1=#{a1}
+            </if>
+            <if test="a2 != null and a2 >0">
+                and a2=#{a2}
+            </if>
+            <if test="a3 != null and a3 >0">
+                and a3=#{a3}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="queryCount" resultType="long" parameterType="com.fh.shop.param.userVip.SearchUserVip">
+          select count(*)  from t_uservip <include refid="tiaojian"></include>
+    </select>
+    <select id="findUserVipList" resultType="com.fh.shop.po.userVip.UserVip" parameterType="com.fh.shop.param.userVip.SearchUserVip">
+            select uv.id,uv.name,uv.realName,uv.phone,uv.email,uv.birthday,
+            CONCAT(a1.areaName,"→",a2.areaName,"→",a3.areaName) "clName" from t_uservip uv
+            LEFT JOIN t_area1 a1 on uv.a1 = a1.id
+            LEFT JOIN t_area1 a2 on uv.a2 = a2.id
+            LEFT JOIN t_area1 a3 on uv.a3 = a3.id
+            <include refid="tiaojian"></include>
+            limit #{start},#{length}
+    </select>
+</mapper>

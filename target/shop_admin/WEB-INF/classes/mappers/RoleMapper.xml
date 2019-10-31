@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.shop.mapper.role.RoleMapper">
+
+	<insert id="addStu" parameterType="com.fh.shop.po.role.StuInfo">
+		insert into userInfo (name,iszs,isty) values (#{name},#{iszs},#{isty})
+	</insert>
+	<select id="selectStu" resultType="long">
+	select count(*) from userInfo
+</select>
+	<select id="selectStuList" resultType="com.fh.shop.po.role.StuInfo" parameterType="com.fh.shop.commen.Page">
+		select t.* from
+		(select id,name,iszs,isty from userInfo)t
+		order by id desc
+		limit #{start},#{length}
+	</select>
+	<delete id="deleteStu" parameterType="Integer">
+		delete from userInfo where id=#{v}
+	</delete>
+
+
+	<insert id="addRole" parameterType="com.fh.shop.po.role.Role">
+<selectKey resultType="long" order="AFTER" keyProperty="id"  >
+	select last_insert_id();
+</selectKey>
+		insert into t_role (roleName) values (#{roleName})
+	</insert>
+
+	<select id="selectRoleUser" resultType="com.fh.shop.po.role.Role" parameterType="com.fh.shop.commen.Page">
+		select t.* from
+		(select id,roleName from t_role)t
+		order by id desc
+		limit #{start},#{length}
+	</select>
+	<select id="selectRoleList" resultType="com.fh.shop.po.role.Role" >
+		select id,roleName from t_role
+	</select>
+
+
+
+<select id="selectCount" resultType="long">
+	select count(*) from t_role
+</select>
+	<delete id="deleteRole" parameterType="Integer">
+		delete from t_role where id=#{v}
+	</delete>
+	<select id="selectRoleById" parameterType="Integer" resultType="com.fh.shop.po.role.Role">
+		select id,roleName from t_role where id=#{id}
+	</select>
+
+	<update id="updateRole" parameterType="com.fh.shop.po.role.Role">
+		update t_role set roleName=#{roleName} where id=#{id}
+	</update>
+
+
+	<insert id="addRoleMenu" parameterType="com.fh.shop.po.role.RoleMenu">
+		insert into role_menu (roleId,menuId) values (#{roleId},#{menuId})
+	</insert>
+
+	<select id="selectRoleMenuById" parameterType="int" resultType="long">
+		select menuId from role_menu where roleId=#{value}
+	</select>
+
+	<delete id="deleteRoleMenu" parameterType="long">
+		delete from role_menu where roleId=#{v}
+	</delete>
+
+</mapper>

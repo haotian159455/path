@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+					<!--对应mapper接口的全路径-->
+<mapper namespace="com.fh.shop.mapper.product.IShopMapper">
+    <sql id="searchWhere">
+        <where>
+            <if test="shopName != null and shopName != ''">
+                shopName like concat ('%',#{shopName},'%')
+            </if>
+            <if test="minPrice != null and minPrice>0">
+                and price > #{minPrice}
+            </if>
+            <if test="maxPrice != null and maxPrice>minPrice">
+                and price &lt;#{maxPrice}
+            </if>
+            <if test="minDate != null">
+                and shopTime > #{minDate}
+            </if>
+            <if test="maxDate != null and maxDate>minDate">
+                and shopTime &lt;#{maxDate}
+            </if>
+            <if test="cl1 != null and cl1 >0">
+                and cl1=#{cl1}
+            </if>
+            <if test="cl2 != null and cl2 >0">
+                and cl2=#{cl2}
+            </if>
+            <if test="cl3 != null and cl3 >0">
+                and cl3=#{cl3}
+            </if>
+        </where>
+    </sql>
+    <select id="findShopCount" resultType="long" parameterType="com.fh.shop.param.product.ParamSearchShop">
+        select count(*) from t_product
+        <include refid="searchWhere"></include>
+    </select>
+    <select id="findPageShopList" resultType="com.fh.shop.po.product.Shop" parameterType="com.fh.shop.param.product.ParamSearchShop">
+        select t.* from
+        (select pd.id,pd.shopName,pd.price,pd.shopImg,pd.shopTime,pd.isUp,pd.isSaleWell,pd.stock,b.brandname
+				,CONCAT(cl1.name,"→",cl2.name,"→",cl3.name) "clname"
+				from t_product pd
+				LEFT JOIN t_class_po cl1 on pd.cl1 = cl1.id
+				LEFT JOIN t_class_po cl2 on pd.cl2 = cl2.id
+				LEFT JOIN t_class_po cl3 on pd.cl3 = cl3.id
+				LEFT JOIN t_product_brand pb on pb.productid = pd.id
+				LEFT JOIN t_brand b on pb.brandid = b.id
+               <include refid="searchWhere"></include>
+                order by id desc ) t
+                limit #{start},#{length}
+    </select>
+    <insert id="addShop" parameterType="com.fh.shop.po.product.Shop">
+        insert into t_product (shopName,price,shopImg,shopTime,isSaleWell,stock,cl1,cl2,cl3) values (#{shopName},#{price},#{shopImg},#{shopTime},#{isSaleWell},#{stock},#{cl1},#{cl2},#{cl3})
+    </insert>
+    <delete id="deleteShop" parameterType="int">
+        delete from t_product where id=#{value}
+    </delete>
+    <select id="findUpdateShop" parameterType="int" resultType="com.fh.shop.po.product.Shop">
+        select pd.id,pd.shopName,pd.price,pd.shopImg,pd.shopTime,pd.isUp,pd.stock,CONCAT(cp1.name,"→",cp2.name,"→",cp3.name) "clname"
+        from t_product  pd
+        LEFT JOIN t_class_po cp1 on pd.cl1 = cp1.id
+        LEFT JOIN t_class_po cp2 on pd.cl2 = cp2.id
+        LEFT JOIN t_class_po cp3 on pd.cl3 = cp3.id
+        where pd.id=#{value}
+    </select>
+    <update id="updateShop" parameterType="com.fh.shop.po.product.Shop">
+        update t_product set shopName=#{shopName},price=#{price},shopTime=#{shopTime},shopImg=#{shopImg},isSaleWell=#{isSaleWell},stock=#{stock}
+        <if test=" cl1 !=null and cl1>0">
+            ,cl1 = #{cl1}
+        </if>
+        <if test=" cl2 !=null and cl2>0">
+            ,cl2 = #{cl2}
+        </if>
+        <if test=" cl3 !=null and cl3>0">
+            ,cl3 = #{cl3}
+        </if>
+        where id=#{id}
+    </update>
+    <update id="isUpShop">
+        update t_product set isUp=#{isUp}
+        where id=#{id}
+    </update>
+    <select id="selectBrandList"  parameterType="long" resultType="string">
+          SELECT b.brandName FROM t_product_brand pb LEFT JOIN t_brand b on pb.brandid = b.id WHERE pb.productid=#{s}
+    </select>
+
+    <select id="findShopList" parameterType="com.fh.shop.param.product.ParamSearchShop" resultType="com.fh.shop.po.product.Shop">
+         select t.* from
+        (select pd.id,pd.shopName,pd.price,pd.shopImg,pd.shopTime,pd.isUp,pd.isSaleWell,pd.stock
+				,CONCAT(cl1.name,cl2.name,cl3.name) "clname"
+				from t_product pd
+				LEFT JOIN t_class_po cl1 on pd.cl1 = cl1.id
+				LEFT JOIN t_class_po cl2 on pd.cl2 = cl2.id
+				LEFT JOIN t_class_po cl3 on pd.cl3 = cl3.id
+        <include refid="searchWhere"></include>
+        order by id desc ) t
+    </select>
+</mapper>

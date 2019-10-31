@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.shop.mapper.menu.IMenuMapper">
+	
+	
+	<select id="selectMenuList" resultType="com.fh.shop.po.menu.Menu">
+		select id,areaName,pId,menuType,menuUrl from t_area
+	</select>
+	
+	<insert id="addArea" parameterType="com.fh.shop.po.menu.Menu">
+		insert into t_area (areaName,pId,menuType,menuUrl) values (#{areaName},#{pId},#{menuType},#{menuUrl})
+	</insert>
+	
+	<update id="updateArea" parameterType="com.fh.shop.po.menu.Menu">
+		update t_area set areaName=#{areaName},menuUrl=#{menuUrl},menuType=#{menuType} where id=#{id}
+	</update>
+
+	<delete id="deleteArea">
+		delete from t_area where id in
+		<foreach collection="list" item="id" separator="," open="(" close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="selectMenuById" parameterType="int" resultType="com.fh.shop.po.menu.Menu">
+		select id,areaName,pId,menuType,menuUrl from t_area where id=#{value}
+	</select>
+
+	<select id="selectMenuId" resultType="com.fh.shop.po.menu.Menu" parameterType="long">
+       select ta.id,ta.pId,ta.areaName,ta.menuUrl from user_role ur left join role_menu rm on ur.roleId=rm.roleId
+       left join t_area ta on rm.menuId=ta.id
+       where ur.userid=#{value}  and ta.menuType=1 group by ta.id
+    </select>
+
+
+	<select id="selectMenuList3" resultType="com.fh.shop.po.menu.Menu" parameterType="long">
+       select ta.id,ta.pId,ta.areaName,ta.menuUrl from user_role ur left join role_menu rm on ur.roleId=rm.roleId
+       left join t_area ta on rm.menuId=ta.id
+       where ur.userid=#{value}  group by ta.id
+    </select>
+
+</mapper>

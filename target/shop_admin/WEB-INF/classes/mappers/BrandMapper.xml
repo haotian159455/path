@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<!--对应mapper接口的全路径-->
+<mapper namespace="com.fh.shop.mapper.brand.IBrandMapper">
+
+    <select id="findBrandCount" resultType="long">
+        select count(*) from t_brand
+    </select>
+    <select id="findPageBrandList" parameterType="com.fh.shop.po.brand.Brand" resultType="com.fh.shop.po.brand.Brand">
+        select id,brandName,brandImg,status,sortId from t_brand
+        order by status DESC ,sortId DESC
+        limit #{start},#{length}
+    </select>
+    <insert id="addBrand" parameterType="com.fh.shop.po.brand.Brand">
+        insert into t_brand (brandName,brandImg,status,sortId) values (#{brandName},#{brandImg},#{status},#{sortId})
+    </insert>
+    <delete id="deleteBrand" parameterType="int">
+        delete from t_brand where id=#{id}
+    </delete>
+
+    <select id="findUpdateBrand" parameterType="int" resultType="com.fh.shop.po.brand.Brand">
+        select id,brandName,brandImg,status,sortId from t_brand where id=#{id}
+    </select>
+
+    <update id="statusBrand">
+        update t_brand set status=#{status} where id=#{id}
+    </update>
+    <update id="sort" parameterType="com.fh.shop.po.brand.Brand">
+        update t_brand set sortId=#{sortId} where id=#{id}
+    </update>
+
+    <update id="updateBrand" parameterType="com.fh.shop.po.brand.Brand">
+          update t_brand set id = #{id},brandName = #{brandName},brandImg = #{brandImg},status = #{status},sortId = #{sortId} where id = #{id}
+    </update>
+
+    <select id="queryUpdate" parameterType="long" resultType="com.fh.shop.po.brand.Brand">
+         select id,brandName,brandImg,status,sortId from t_brand where id=#{id}
+    </select>
+
+</mapper>
